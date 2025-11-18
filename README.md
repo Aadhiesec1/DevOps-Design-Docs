@@ -275,7 +275,136 @@ Recommended tools:
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 
+## 3. CI/CD Pipeline Design Overview
+This document describes a **simple CI/CD workflow** implemented using **Jenkins** integrated with **GitHub Webhooks**.  
+The pipeline provides automated stages for building, testing, storing artifacts, deploying, and verifying application health across environments.
 
+The overall goal is to ensure:
+- Automated and reliable code delivery  
+- Consistent testing before deployments  
+- Controlled promotion from Dev → Stage → Prod  
+- Safer production releases using manual approval gates  
+
+---
+
+## CI/CD Pipeline Diagram
+
+**Embedded diagram (PNG):**  
+![CI/CD Pipeline Diagram](./ci-cd.png)
+
+**Downloadable diagram (PDF):**  
+[cicd-pipeline.pdf](./ci-cd-1.pdf)
+
+> **Pipeline Flow (High-Level):**  
+> Developer Commit → GitHub Webhook → Jenkins → Build → Test → Artifacts → Deploy to Dev → Deploy to Stage → Manual Approval → Deploy to Prod → Monitoring & Health Checks
+
+---
+
+## Components
+
+### 1. Developers
+Developers (Dev-1, Dev-2) write code and push changes to the GitHub repository.  
+These pushes create new versions of the application.
+
+---
+
+### 2. GitHub Repository
+- Stores the codebase  
+- Acts as the pipeline trigger source  
+- Webhook notifies Jenkins whenever:
+  - Code is pushed  
+  - Pull request is merged  
+  - Branch updates occur  
+
+---
+
+### 3. Jenkins Server
+Jenkins orchestrates the entire CI/CD workflow.
+
+Responsibilities:
+- Receives GitHub webhook events  
+- Starts the pipeline automatically  
+- Runs build, test, and deployment stages  
+- Handles approvals, artifact storage, and notifications  
+
+---
+
+### 4. Build Stage
+The build stage is triggered after webhook notification.
+
+This stage:
+- Pulls the latest code  
+- Installs dependencies  
+- Compiles the application  
+- Prepares artifacts for testing  
+
+---
+
+### 5. Test Stage
+Automated **Unit Tests** and **Integration Tests** are executed.
+
+Benefits:
+- Ensures build quality  
+- Detects issues early  
+- Prevents broken code from reaching deployment environments  
+
+Only if tests pass, the pipeline proceeds.
+
+---
+
+### 6. Artifacts Stage
+Jenkins stores the build output (artifacts) for deployment.
+
+Artifacts may include:
+- Compiled binaries  
+- Packaged application bundles  
+- Static files  
+- Container images (if extended)
+
+Stored artifacts are versioned for traceability and rollback.
+
+---
+
+### 7. Deployment Stages
+
+#### **Dev Environment (Auto Deploy)**
+- Every successful build & test is automatically deployed to Dev  
+- Allows quick developer validation  
+- Ensures rapid iteration
+
+#### **Stage Environment**
+- Artifact is promoted from Dev → Stage  
+- Automatically deployed  
+- Used for integration, QA, and UAT testing  
+
+#### **Prod Environment (Manual Approval)**
+- Requires an explicit approval step  
+- Ensures controlled releases  
+- Reduces production risks  
+- Once approved, Jenkins deploys to the production environment
+
+---
+
+### 8. Monitoring & Health Checks
+After production deployment:
+- Jenkins performs a basic health check (e.g., `/health` endpoint)  
+- Application monitoring tools validate uptime and performance  
+- If health checks fail, rollback or notifications can be triggered  
+
+---
+
+## Promotion Strategy
+The pipeline follows a clear controlled path:
+
+**Dev → Stage → Prod**
+
+- Dev: Fast feedback, automatic deployments  
+- Stage: Stable testing environment  
+- Prod: Manual approval ensures safety  
+
+This ensures reliable and predictable releases.
+
+---
 
 
 
