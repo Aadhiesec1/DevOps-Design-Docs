@@ -107,4 +107,175 @@ Alternate hosting approaches (not used here but valid depending on requirements)
    - **CloudFront logs** + **S3 logs** for access analytics.
    - **AWS Config / GuardDuty** for security posture monitoring.
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+## 2. API (Backend) Architecture Design Overview
+This document describes a backend (API) architecture deployed on AWS designed for scalability, security, fault tolerance, and efficient request handling.  
+The design uses **ECS Fargate** (serverless containers) behind an **Application Load Balancer (ALB)**, with automatic horizontal scaling and secure secret management using AWS Secrets Manager.
+
+---
+
+## Architecture Diagram
+
+**Embedded diagram (PNG):**  
+![API Architecture Diagram](./api-arch.png)
+
+**Downloadable diagram (PDF):**  
+[api-arch.pdf](./api-arch.pdf)
+
+> Diagram flow (high level):  
+> End User → Route 53 → ALB → ECS Cluster (Fargate Tasks) → Secrets Manager → RDS (secure DB connection)
+
+---
+
+## Components
+
+### 1. End User
+A client (mobile, frontend web app, or service) making HTTPS API requests.  
+Requests are routed to the backend API domain using DNS.
+
+---
+
+### 2. Route 53
+AWS Route 53 resolves the API domain and directs the request to the **Application Load Balancer (ALB)**.  
+Routing options such as latency-based routing or health checks ensure users hit a healthy endpoint.
+
+---
+
+### 3. Application Load Balancer (ALB)
+The ALB:
+- Accepts **HTTPS** traffic (TLS termination),
+- Performs health checks on ECS tasks,
+- Routes requests to the target group associated with the ECS service,
+- Ensures even distribution of traffic across all running API containers.
+
+The ALB provides Layer 7 routing and can support path-based rules (e.g., `/auth`, `/users`, `/orders`).
+
+---
+
+### 4. ECS Cluster (Fargate)
+The compute layer running your API containers.  
+Key features:
+- Fully managed, serverless container runtime (Fargate),
+- No EC2 instances to manage,
+- Each task runs an isolated container environment.
+
+The ECS cluster receives traffic from ALB and distributes requests across tasks.
+
+---
+
+### 5. Fargate Tasks (Task 1, Task 2, …)
+Each task represents one instance of the API application container.
+
+Responsibilities:
+- Process API requests,
+- Communicate with RDS,
+- Retrieve API keys, DB credentials, and secrets from **Secrets Manager**,
+- Remain stateless to support horizontal scaling,
+- Scale up/down based on demand.
+
+Multiple tasks ensure high availability and parallel workload processing.
+
+---
+
+### 6. Secrets Manager
+A secure storage for:
+- Database credentials,
+- API keys,
+- Connection strings,
+- Sensitive configuration.
+
+Fargate tasks dynamically fetch secrets at runtime — no hardcoded credentials.
+
+---
+
+### 7. Amazon RDS
+The relational database storing application data.  
+Provides:
+- Multi-AZ availability,
+- Automated backups,
+- Secure connections (TLS),
+- IAM authentication (optional).
+
+Connections to RDS occur from private subnets to ensure no public exposure.
+
+---
+
+## How the API is Hosted
+Primary hosting architecture:
+- **ALB → ECS Fargate → RDS**
+- Stateless API containers enable efficient horizontal scaling.
+- Secrets Manager ensures secure storage of sensitive values.
+- Route 53 handles DNS for the API domain.
+
+Alternative approaches (not used here):
+- EC2 Auto Scaling Groups
+- Lambda + API Gateway (serverless)
+- EKS (Kubernetes)
+
+---
+
+## Scaling Approach for API
+
+### Horizontal Scaling
+ECS Fargate scales based on CloudWatch metrics:
+- **CPU Utilization**
+- **Memory Utilization**
+- **Request count per target**
+- **ALB target response time**
+
+When traffic increases:
+- New Fargate tasks are launched automatically.
+When traffic decreases:
+- Tasks are terminated to reduce cost.
+
+### Load Distribution
+- ALB distributes incoming requests evenly across all healthy tasks.
+- If a task becomes unhealthy, ALB routes traffic away automatically.
+
+### Stateless Architecture
+- Every task is identical and interchangeable.
+- No session storage inside containers; use Redis or JWT tokens if needed.
+
+---
+
+## How the System Handles Load
+
+### 1. DNS Resolution
+Route 53 resolves the API domain and directs the client to the ALB.
+
+### 2. Load Balancing
+ALB terminates TLS and routes traffic across multiple Fargate tasks.
+
+### 3. Automatic Scaling
+ECS auto-scaling policies add tasks when:
+- CPU spikes,
+- Memory usage increases,
+- Latency grows,
+- Request load surges.
+
+### 4. Secure Secret Retrieval
+Fargate tasks fetch credentials dynamically from Secrets Manager, removing secret sprawl and reducing breach impact.
+
+### 5. Database Connectivity
+Each task establishes a secure (TLS) connection to RDS.  
+Connection pooling strategies prevent DB overload.
+
+### 6. Fault Tolerance
+- Tasks run in multiple Availability Zones,
+- ALB health checks ensure traffic flows to healthy tasks,
+- Fargate tasks automatically restart on failure.
+
+### 7. Monitoring & Logging
+Recommended tools:
+- **CloudWatch Logs** & Metrics,
+- **X-Ray** for tracing,
+- **ECS Service Events** for task health,
+- **RDS Performance Insights**.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
