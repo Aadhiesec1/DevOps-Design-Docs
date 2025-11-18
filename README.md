@@ -1,12 +1,12 @@
 # AWS Architecture Design 
 
-## 📌 Overview
+## 1. UI (Frontend) Architecture Design Overview
 This document describes a frontend (UI) architecture hosted on AWS designed for high performance, security, and availability.  
 The design uses a serverless CDN-backed approach (CloudFront + S3) with AWS WAF for protection.
 
 ---
 
-## 🖼 Architecture Diagram
+## Architecture Diagram
 
 **Embedded diagram (PNG):**  
 ![UI Architecture Diagram](./ui-arch.png)
