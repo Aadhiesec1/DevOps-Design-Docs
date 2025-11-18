@@ -12,7 +12,7 @@ The design uses a serverless CDN-backed approach (CloudFront + S3) with AWS WAF 
 ![UI Architecture Diagram](./ui-arch.png)
 
 **Downloadable diagram (PDF):**  
-[ui-architecture.pdf](./ui-arch.pdf)
+[ui-arch.pdf](./ui-arch.pdf)
 
 > Diagram flow (high level):  
 > End User → Route 53 → CloudFront → WAF → CloudFront Edge Locations (AZ-A / AZ-B) → S3 (origin)
