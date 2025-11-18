@@ -2,4 +2,4 @@
 
 # UI (Frontend) Architecture Diagram
 
-![UI Architecture Diagram](./UI Architecture.png)
+![UI Architecture Diagram](./ui-arch.png)
