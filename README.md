@@ -279,12 +279,6 @@ Recommended tools:
 This document describes a **simple CI/CD workflow** implemented using **Jenkins** integrated with **GitHub Webhooks**.  
 The pipeline provides automated stages for building, testing, storing artifacts, deploying, and verifying application health across environments.
 
-The overall goal is to ensure:
-- Automated and reliable code delivery  
-- Consistent testing before deployments  
-- Controlled promotion from Dev → Stage → Prod  
-- Safer production releases using manual approval gates  
-
 ---
 
 ## CI/CD Pipeline Diagram
@@ -403,8 +397,12 @@ The pipeline follows a clear controlled path:
 - Prod: Manual approval ensures safety  
 
 This ensures reliable and predictable releases.
-
 ---
 
+The overall goal is to ensure:
+- Automated and reliable code delivery  
+- Consistent testing before deployments  
+- Controlled promotion from Dev → Stage → Prod  
+- Safer production releases using manual approval gates  
 
-
+---
